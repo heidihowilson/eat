@@ -21,7 +21,6 @@ services:
 
 volumes:
   eat-data:
-    external: true
 
 networks:
   coolify:
