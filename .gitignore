@@ -1,0 +1,10 @@
+node_modules/
+*.log
+
+# SQLite database + WAL/SHM sidecars
+*.db
+*.db-wal
+*.db-shm
+
+# Generated at build time from styles/app.css (see build:css script)
+public/static/app.css

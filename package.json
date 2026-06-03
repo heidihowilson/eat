@@ -1,0 +1,26 @@
+{
+  "name": "eat",
+  "version": "1.0.0",
+  "description": "Household dinner-planning web app (Remix v3 + SQLite)",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i styles/app.css -o public/static/app.css --minify",
+    "serve": "npm run build:css && tsx server.ts",
+    "dev": "npm run build:css && tsx watch server.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "remix": "3.0.0-beta.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.0",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.0",
+    "daisyui": "^5.5.20",
+    "tailwindcss": "^4.3.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

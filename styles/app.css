@@ -1,0 +1,32 @@
+/* Tailwind v4 + DaisyUI input. Compiled to public/static/app.css at build time. */
+@import "tailwindcss" source(none);
+
+/* Scan the server-rendered views (app/) and the client script for class names.
+   public/static/app.js may toggle classes at runtime that never appear statically
+   in the views. These globs MUST track where source lives — if they go stale,
+   Tailwind scans nothing and emits an empty stylesheet (the whole site renders
+   unstyled). */
+@source "../app/**/*.tsx";
+@source "../public/static/app.js";
+
+/* Only ship the one theme the app uses. */
+@plugin "daisyui" {
+  themes: nord --default;
+}
+
+/* ── Native-feeling form controls (phone-first) ──
+   Rules after the daisyui plugin win on source order. A control font-size < 16px
+   makes iOS Safari auto-zoom on focus; 16px kills the zoom; a 44px min height
+   gives a proper touch target. */
+.input,
+.select,
+.textarea {
+  font-size: 1rem; /* 16px */
+}
+.input,
+.select {
+  min-height: 2.75rem; /* 44px touch target */
+}
+.textarea {
+  min-height: 4rem;
+}

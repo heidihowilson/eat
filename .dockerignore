@@ -1,0 +1,9 @@
+node_modules
+*.db
+*.db-wal
+*.db-shm
+.git
+.gitignore
+docs
+*.log
+public/static/app.css
