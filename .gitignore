@@ -8,3 +8,5 @@ node_modules/
 
 # Generated at build time from styles/app.css (see build:css script)
 public/static/app.css
+
+.claude/
