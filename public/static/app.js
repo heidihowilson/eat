@@ -17,7 +17,35 @@
   // to a <form> or <button>.
   document.addEventListener("submit", function (e) {
     const form = e.target;
-    const msg = form && form.getAttribute && form.getAttribute("data-confirm");
+    const msg =
+      (form && form.getAttribute && form.getAttribute("data-confirm")) ||
+      (e.submitter && e.submitter.getAttribute && e.submitter.getAttribute("data-confirm"));
     if (msg && !window.confirm(msg)) e.preventDefault();
+  });
+
+  // Copy-to-clipboard: <button type="button" data-copy="text"> copies and flashes "Copied!".
+  document.addEventListener("click", function (e) {
+    const btn = e.target && e.target.closest && e.target.closest("[data-copy]");
+    if (!btn) return;
+    const text = btn.getAttribute("data-copy");
+    const done = function () {
+      const old = btn.textContent;
+      btn.textContent = "Copied!";
+      setTimeout(function () {
+        btn.textContent = old;
+      }, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done);
+    } else {
+      // http/older-webview fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      done();
+    }
   });
 })();

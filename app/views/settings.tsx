@@ -231,13 +231,18 @@ export function SettingsPage(handle: Handle<SettingsProps>) {
                           </button>
                         </form>
                       </div>
-                      {/* Read-only so the adult can long-press / select-all to copy on a phone. */}
-                      <input
-                        type="text"
-                        readonly
-                        value={inv.url}
-                        class="input input-bordered input-sm w-full font-mono text-xs"
-                      />
+                      {/* Copy button (data-copy handler in app.js); input stays for manual copy fallback. */}
+                      <div class="flex gap-2">
+                        <input
+                          type="text"
+                          readonly
+                          value={inv.url}
+                          class="input input-bordered input-sm flex-1 min-w-0 font-mono text-xs"
+                        />
+                        <button type="button" class="btn btn-sm btn-outline shrink-0" data-copy={inv.url}>
+                          Copy
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ul>
