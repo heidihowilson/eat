@@ -10,3 +10,4 @@ node_modules/
 public/static/app.css
 
 .claude/
+test-results/
