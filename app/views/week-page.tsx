@@ -77,19 +77,28 @@ function fmtDay(d: DaySlot): string {
   return `${WEEKDAYS[d.weekdayIndex]} ${MONTHS[d.monthIndex]} ${d.dayOfMonth}`;
 }
 
+/** Whether a slot has a concrete plan to show (a named meal, free text, or an
+    unplanned-takeout tap — the latter has no text but still means "we ate out"). */
+function slotFilled(d: DaySlot): boolean {
+  const text = d.ideaName ?? d.text;
+  return (text !== null && text !== "") || d.takeoutUnplanned;
+}
+
 /** Read-only summary of what's planned for a slot. */
 function SlotSummary(handle: Handle<{ day: DaySlot }>) {
   return () => {
     const d = handle.props.day;
-    const filled = d.ideaName ?? d.text;
+    const text = d.ideaName ?? d.text;
+    // Unplanned takeout has no meal text but is still a plan: show "Takeout".
+    const label = text !== null && text !== "" ? text : d.takeoutUnplanned ? "Takeout" : null;
     return (
       <div class="flex items-center gap-2 flex-wrap">
-        {filled ? (
-          <span class="font-medium text-base-content">{filled}</span>
+        {label !== null ? (
+          <span class="font-medium text-base-content">{label}</span>
         ) : (
           <span class="text-base-content/40 italic">No plan yet</span>
         )}
-        {filled ? <span class={`badge badge-sm ${KIND_BADGE[d.kind]}`}>{KIND_LABEL[d.kind]}</span> : ""}
+        {label !== null ? <span class={`badge badge-sm ${KIND_BADGE[d.kind]}`}>{KIND_LABEL[d.kind]}</span> : ""}
         {d.takeoutUnplanned ? <span class="badge badge-sm badge-outline badge-warning">unplanned</span> : ""}
       </div>
     );
@@ -149,7 +158,7 @@ function SlotEditor(handle: Handle<{ day: DaySlot; ideas: Idea[] }>) {
 function DayCard(handle: Handle<{ day: DaySlot; ideas: Idea[]; role: Role; isCurrentWeek: boolean }>) {
   return () => {
     const { day: d, ideas, role, isCurrentWeek } = handle.props;
-    const filled = (d.ideaName ?? d.text) !== null && (d.ideaName ?? d.text) !== "";
+    const filled = slotFilled(d);
     return (
       <div
         class={`card bg-base-200 border ${

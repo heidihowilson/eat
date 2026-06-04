@@ -60,6 +60,66 @@ curl -s "http://100.123.69.76:8000/api/v1/applications/ms80csck0cw0wwsokwk48w0w"
 ## Health check
 - `GET /health` → `OK` (no auth)
 
+## Backups
+
+Nightly WAL-safe SQLite backups run on **grove** (192.168.0.8), reachable via
+jump host: `ssh root@192.168.0.94` then `ssh grove@192.168.0.8`.
+
+- **Script**: `/home/grove/eat-backups/backup-eat.sh` (owned by `grove`, executable)
+- **Source DB**: `/var/lib/docker/volumes/ms80csck0cw0wwsokwk48w0w_eat-data/_data/eat.db`
+  (the compose-managed `eat-data` named volume)
+- **Output**: `/home/grove/eat-backups/eat-YYYY-MM-DD.db` (one file per day, `0600`)
+- **Log**: `/home/grove/eat-backups/backup.log` — one line per run with timestamp,
+  filename, byte size, and `users` table row count.
+- **Cron**: `30 3 * * *` (nightly 03:30, server local time) in **grove's user crontab**
+  — `crontab -l` as `grove`. Root cron was unnecessary: grove has passwordless
+  `sudo`, so the script just calls `sudo python3` for the one step that needs root
+  (reading the Docker volume), then `chown`s the backup back to `grove`.
+- **Retention**: 14 days. The script prunes `eat-*.db` files older than 14 days via
+  `find -mtime +14 -delete`.
+
+### Why WAL-safe (not `cp`)
+
+The live `eat.db` runs in WAL mode, so the most recent writes sit in `eat.db-wal`,
+not the main file — a plain `cp eat.db` can capture a stale snapshot. The script
+uses Python's `sqlite3.Connection.backup()`, which folds the WAL in and produces a
+single consistent `.db` (no `-wal`/`-shm` sidecars), matching the tv-tracker pattern.
+
+### Run manually
+
+```bash
+ssh root@192.168.0.94 "ssh grove@192.168.0.8 '/home/grove/eat-backups/backup-eat.sh; tail -1 /home/grove/eat-backups/backup.log'"
+```
+
+### Verify a backup
+
+```bash
+ssh root@192.168.0.94 "ssh grove@192.168.0.8 'python3 - <<PY
+import sqlite3
+c=sqlite3.connect(\"/home/grove/eat-backups/eat-$(date +%F).db\")
+print(c.execute(\"pragma integrity_check\").fetchone()[0])
+print(\"users:\", c.execute(\"select count(*) from users\").fetchone()[0])
+PY'"
+```
+
+### Restore procedure
+
+The backup is a single consistent `.db` file. To restore it into production:
+
+1. **Stop the app in Coolify** (Application → Stop) so nothing is writing to the DB.
+   Do this via the Coolify UI — do not stop the container by hand.
+2. **Copy the chosen backup into the volume as `eat.db`**, removing any stale WAL
+   sidecars so SQLite doesn't replay an old WAL on top of the restored file:
+   ```bash
+   VOL=/var/lib/docker/volumes/ms80csck0cw0wwsokwk48w0w_eat-data/_data
+   ssh root@192.168.0.94 "ssh grove@192.168.0.8 'sudo rm -f $VOL/eat.db-wal $VOL/eat.db-shm && \
+     sudo cp /home/grove/eat-backups/eat-YYYY-MM-DD.db $VOL/eat.db && \
+     sudo chown root:root $VOL/eat.db && sudo chmod 644 $VOL/eat.db'"
+   ```
+   (Backups already have the WAL folded in, so the restored `eat.db` is complete on
+   its own; SQLite will create fresh `-wal`/`-shm` files on next start.)
+3. **Start the app in Coolify** (Application → Start) and confirm `GET /health` → `OK`.
+
 ## PoC deviations from spec (workarounds log)
 
 1. **Auth: email+password instead of Google SSO** (REQUIREMENTS R1.1).
