@@ -45,19 +45,18 @@ function IdAction(
 }
 
 /**
- * Faux checkbox for the tap-row-to-POST toggle. Borderless by design: a tonal
- * field box with the library's inset affordance ring (the mk-checkbox technique
- * — box-shadow, not border-*), accent fill + mk--check glyph when checked.
+ * Checkbox visual for the tap-row-to-POST toggle. The row's <button> is the
+ * interactive element, so this is the library's static flavor: mk-checkbox on
+ * a <span> with the --checked modifier (0.1.5) — glyph and all states come
+ * from @sethmakes/css, nothing hand-painted.
  */
 function FauxCheck(handle: Handle<{ checked: boolean }>) {
-  return () =>
-    handle.props.checked ? (
-      <span class="flex h-6 w-6 flex-none items-center justify-center bg-accent text-accent-contrast">
-        <span class="mk-icon mk-icon--sm icon-[mk--check]" aria-hidden="true"></span>
-      </span>
-    ) : (
-      <span class="flex h-6 w-6 flex-none bg-field shadow-[inset_0_0_0_2px_var(--mk-color-text-muted)]"></span>
-    );
+  return () => (
+    <span
+      class={`mk-checkbox ${handle.props.checked ? "mk-checkbox--checked" : ""}`}
+      aria-hidden="true"
+    ></span>
+  );
 }
 
 function GroceryRow(handle: Handle<{ item: GroceryItem; canEdit: boolean }>) {

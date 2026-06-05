@@ -5,7 +5,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build:css": "cp -r node_modules/@sethmakes/tokens/fonts public/static/ && tailwindcss -i styles/app.css -o public/static/app.css --minify",
+    "build:css": "mk-fonts public/static/fonts && tailwindcss -i styles/app.css -o public/static/app.css --minify",
     "serve": "npm run build:css && tsx server.ts",
     "dev": "npm run build:css && tsx watch server.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -14,9 +14,9 @@
   "dependencies": {
     "@iconify-json/lucide": "^1.2.111",
     "@iconify/tailwind4": "^1.2.3",
-    "@sethmakes/css": "^0.1.4",
-    "@sethmakes/icons": "^0.1.4",
-    "@sethmakes/tokens": "^0.1.4",
+    "@sethmakes/css": "^0.1.5",
+    "@sethmakes/icons": "^0.1.5",
+    "@sethmakes/tokens": "^0.1.5",
     "better-sqlite3": "^11.8.1",
     "remix": "3.0.0-beta.3"
   },

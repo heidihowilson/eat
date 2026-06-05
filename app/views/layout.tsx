@@ -77,9 +77,9 @@ export function Layout(
           <meta name="apple-mobile-web-app-title" content="eat" />
           <link href={`${staticUrl("app.css")}?v=${CSS_VERSION}`} rel="stylesheet" type="text/css" />
         </head>
-        {/* Flex column so the sticky bottom appbar's flow slot is the bottom of
-            the (≥viewport-high) body even on short pages. */}
-        <body class="min-h-screen flex flex-col">
+        {/* mk-shell is the appbar's document contract (0.1.5): a ≥viewport-high
+            flex column so the sticky bottom appbar pins even on short pages. */}
+        <body class="mk-shell">
           <header class="mk-appbar">
             <div class="flex items-center gap-2 max-w-3xl mx-auto w-full min-h-8">
               <a href={routes.week.index.href()} class="mk-link-reset font-bold text-lg text-accent">
@@ -89,7 +89,7 @@ export function Layout(
             </div>
           </header>
 
-          <main class="max-w-3xl mx-auto px-3 py-4 w-full flex-1">{handle.props.children}</main>
+          <main class="mk-shell__main max-w-3xl mx-auto px-3 py-4 w-full">{handle.props.children}</main>
 
           {hideNav ? (
             ""
