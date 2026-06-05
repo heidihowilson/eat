@@ -25,7 +25,8 @@ COPY app ./app
 COPY public ./public
 COPY styles ./styles
 
-# Precompile Tailwind/DaisyUI -> public/static/app.css before first paint (no FOUC).
+# Precompile sethmakes/Tailwind -> public/static/app.css (+ copy the self-hosted
+# font files to public/static/fonts) before first paint (no FOUC).
 RUN npm run build:css
 
 # SQLite data directory (mounted as a volume in production)

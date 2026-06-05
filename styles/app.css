@@ -1,32 +1,66 @@
-/* Tailwind v4 + DaisyUI input. Compiled to public/static/app.css at build time. */
-@import "tailwindcss" source(none);
+/* sethmakes design system + Tailwind v4 layout utilities. Compiled to
+   public/static/app.css at build time.
+
+   Import order is a contract:
+   1. @sethmakes/tokens before @sethmakes/css — css defines no tokens; without
+      tokens first every var(--mk-*) resolves to nothing.
+   2. mk layers (mk.reset/base/components/utilities) are declared before
+      Tailwind's, so Tailwind utilities — declared last — win over mk component
+      rules. That's what lets `p-3` tighten an mk-card or `text-sm` resize a
+      heading.
+   Tailwind preflight is intentionally NOT imported: it would land after
+   mk.base and clobber the system's typography/link styles. mk ships its own
+   reset; the small base block below covers the gap preflight used to fill. */
+@import "@sethmakes/tokens/index.css";
+@import "@sethmakes/tokens/fonts.css";
+@import "@sethmakes/css/index.css";
+
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
 
 /* Scan the server-rendered views (app/) and the client script for class names.
-   public/static/app.js may toggle classes at runtime that never appear statically
-   in the views. These globs MUST track where source lives — if they go stale,
-   Tailwind scans nothing and emits an empty stylesheet (the whole site renders
-   unstyled). */
+   public/static/app.js may toggle classes at runtime that never appear
+   statically in the views. These globs MUST track where source lives — if they
+   go stale, Tailwind scans nothing and emits an empty stylesheet (the whole
+   site renders unstyled). */
 @source "../app/**/*.tsx";
 @source "../public/static/app.js";
 
-/* Only ship the one theme the app uses. */
-@plugin "daisyui" {
-  themes: nord --default;
+/* Brand icon set (prefix `mk`) + raw Lucide, emitted as mask-CSS utilities
+   (icon-[mk--calendar], …) for only the names that appear in the markup. */
+@plugin "@iconify/tailwind4" {
+  prefix: icon;
+  scale: 1;
+  icon-sets: from-json(mk, "node_modules/@sethmakes/icons/dist/mk.json");
 }
 
-/* ── Native-feeling form controls (phone-first) ──
-   Rules after the daisyui plugin win on source order. A control font-size < 16px
-   makes iOS Safari auto-zoom on focus; 16px kills the zoom; a 44px min height
-   gives a proper touch target. */
-.input,
-.select,
-.textarea {
-  font-size: 1rem; /* 16px */
+/* Bridge mk semantic tokens into Tailwind color utilities (text-muted,
+   bg-surface-2, hover:text-danger, …). Components use mk- classes; these
+   exist for the layout-utility layer the app keeps. */
+@theme {
+  --color-accent: var(--mk-color-accent);
+  --color-accent-contrast: var(--mk-color-accent-contrast);
+  --color-warning: var(--mk-color-warning);
+  --color-danger: var(--mk-color-danger);
+  --color-muted: var(--mk-color-text-muted);
+  --color-faint: var(--mk-color-text-faint);
+  --color-surface-1: var(--mk-color-surface-1);
+  --color-surface-2: var(--mk-color-surface-2);
+  --color-surface-3: var(--mk-color-surface-3);
 }
-.input,
-.select {
-  min-height: 2.75rem; /* 44px touch target */
-}
-.textarea {
-  min-height: 4rem;
+
+/* What we still need from preflight (not imported, see header): the views
+   space everything with mb-N and gap-N utilities and assume zero default
+   margins. */
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  ul,
+  ol {
+    margin: 0;
+  }
 }
