@@ -31,11 +31,13 @@ const KIND_LABEL: Record<SlotKind, string> = {
   out: "Eating out",
 };
 
+/* Tonal badge per meal kind. There is no info hue in the system — leftovers
+   (old badge-info) goes plain tonal like home; the label text disambiguates. */
 const KIND_BADGE: Record<SlotKind, string> = {
-  home: "badge-ghost",
-  takeout: "badge-warning",
-  leftovers: "badge-info",
-  out: "badge-accent",
+  home: "",
+  takeout: "mk-badge--warning",
+  leftovers: "",
+  out: "mk-badge--accent",
 };
 
 /** A single day's resolved plan, passed in from the controller. */
@@ -94,12 +96,12 @@ function SlotSummary(handle: Handle<{ day: DaySlot }>) {
     return (
       <div class="flex items-center gap-2 flex-wrap">
         {label !== null ? (
-          <span class="font-medium text-base-content">{label}</span>
+          <span class="font-medium">{label}</span>
         ) : (
-          <span class="text-base-content/40 italic">No plan yet</span>
+          <span class="text-faint italic">No plan yet</span>
         )}
-        {label !== null ? <span class={`badge badge-sm ${KIND_BADGE[d.kind]}`}>{KIND_LABEL[d.kind]}</span> : ""}
-        {d.takeoutUnplanned ? <span class="badge badge-sm badge-outline badge-warning">unplanned</span> : ""}
+        {label !== null ? <span class={`mk-badge mk-badge--sm ${KIND_BADGE[d.kind]}`}>{KIND_LABEL[d.kind]}</span> : ""}
+        {d.takeoutUnplanned ? <span class="mk-badge mk-badge--sm mk-badge--warning">unplanned</span> : ""}
       </div>
     );
   };
@@ -112,7 +114,7 @@ function SlotEditor(handle: Handle<{ day: DaySlot; ideas: Idea[] }>) {
     const ideas = handle.props.ideas;
     const listId = `ideas-${d.date}`;
     return (
-      <form method="POST" action={routes.week.setSlot.href()} class="flex flex-col gap-2 mt-2">
+      <form method="POST" action={routes.week.setSlot.href()} class="flex flex-col gap-2">
         <input type="hidden" name="date" value={d.date} />
         {/* Idea picker — a datalist over the household pool. Choosing one wins over
             free text (the controller prefers idea_id; see week.tsx). Leave blank to
@@ -122,7 +124,7 @@ function SlotEditor(handle: Handle<{ day: DaySlot; ideas: Idea[] }>) {
           list={listId}
           placeholder="Pick from ideas, or type below…"
           value={d.ideaName ?? ""}
-          class="input input-bordered input-sm w-full"
+          class="mk-input"
           autocomplete="off"
         />
         <datalist id={listId}>
@@ -135,18 +137,18 @@ function SlotEditor(handle: Handle<{ day: DaySlot; ideas: Idea[] }>) {
           type="text"
           placeholder="…or freeform (e.g. clean out the fridge)"
           value={d.ideaId === null ? d.text ?? "" : ""}
-          class="input input-bordered input-sm w-full"
+          class="mk-input"
           maxlength={200}
         />
         <div class="flex items-center gap-2">
-          <select name="kind" class="select select-bordered select-sm flex-1" aria-label="Meal kind">
+          <select name="kind" class="mk-select flex-1 w-auto" aria-label="Meal kind">
             {KINDS.map((k) => (
               <option value={k.value} selected={k.value === d.kind}>
                 {k.label}
               </option>
             ))}
           </select>
-          <button type="submit" class="btn btn-primary btn-sm">
+          <button type="submit" class="mk-btn mk-btn--primary">
             Save
           </button>
         </div>
@@ -161,53 +163,52 @@ function DayCard(handle: Handle<{ day: DaySlot; ideas: Idea[]; role: Role; isCur
     const filled = slotFilled(d);
     return (
       <div
-        class={`card bg-base-200 border ${
-          d.isToday ? "border-primary ring-1 ring-primary/30" : "border-base-300"
+        class={`mk-card p-3 flex flex-col gap-1 ${
+          // Today gets a tonal lift — an accent-subtle wash, no border/ring.
+          d.isToday ? "bg-[var(--mk-color-accent-subtle)]" : ""
         }`}
       >
-        <div class="card-body p-3 gap-1">
-          <div class="flex items-center justify-between">
-            <span class={`text-sm font-semibold ${d.isToday ? "text-primary" : "text-base-content/70"}`}>
-              {fmtDay(d)}
-              {d.isToday ? <span class="badge badge-primary badge-xs ml-2 align-middle">today</span> : ""}
-            </span>
-            {/* One-tap "we got takeout" — only adults, only today, only on the
-                current week (R2.4). It overwrites the slot to an unplanned takeout. */}
-            {role === "adult" && d.isToday && isCurrentWeek ? (
-              <form method="POST" action={routes.week.gotTakeout.href()}>
-                <input type="hidden" name="date" value={d.date} />
-                <button type="submit" class="btn btn-warning btn-xs">
-                  🥡 We got takeout
-                </button>
-              </form>
-            ) : (
-              ""
-            )}
-          </div>
+        <div class="flex items-center justify-between">
+          <span class={`text-sm font-semibold ${d.isToday ? "text-accent" : "text-muted"}`}>
+            {fmtDay(d)}
+            {d.isToday ? <span class="mk-badge mk-badge--accent mk-badge--sm ml-2 align-middle">today</span> : ""}
+          </span>
+          {/* One-tap "we got takeout" — only adults, only today, only on the
+              current week (R2.4). It overwrites the slot to an unplanned takeout. */}
+          {role === "adult" && d.isToday && isCurrentWeek ? (
+            <form method="POST" action={routes.week.gotTakeout.href()}>
+              <input type="hidden" name="date" value={d.date} />
+              <button type="submit" class="mk-btn mk-btn--sm text-warning">
+                🥡 We got takeout
+              </button>
+            </form>
+          ) : (
+            ""
+          )}
+        </div>
 
-          <SlotSummary day={d} />
+        <SlotSummary day={d} />
 
-          {role === "adult" ? (
-            <details class="mt-1">
-              <summary class="text-xs text-primary cursor-pointer select-none">
-                {filled ? "Edit" : "Plan this day"}
-              </summary>
+        {role === "adult" ? (
+          <details class="mk-disclosure mt-1">
+            <summary class="text-xs">{filled ? "Edit" : "Plan this day"}</summary>
+            <div class="mk-disclosure__body">
               <SlotEditor day={d} ideas={ideas} />
               {filled ? (
                 <form method="POST" action={routes.week.clearSlot.href()} class="mt-2">
                   <input type="hidden" name="date" value={d.date} />
-                  <button type="submit" class="btn btn-ghost btn-xs text-error" data-confirm="Clear this day's plan?">
+                  <button type="submit" class="mk-btn mk-btn--ghost mk-btn--sm text-danger" data-confirm="Clear this day's plan?">
                     Clear
                   </button>
                 </form>
               ) : (
                 ""
               )}
-            </details>
-          ) : (
-            ""
-          )}
-        </div>
+            </div>
+          </details>
+        ) : (
+          ""
+        )}
       </div>
     );
   };
@@ -217,25 +218,29 @@ function TakeoutCounterCard(handle: Handle<{ counter: TakeoutCounter }>) {
   return () => {
     const c = handle.props.counter;
     return (
-      <div class={`card border ${c.over ? "border-warning bg-warning/10" : "border-base-300 bg-base-200"}`}>
-        <div class="card-body p-3 flex-row items-center justify-between">
-          <div class="flex flex-col">
-            <span class="text-xs uppercase tracking-wide text-base-content/50">Takeout this week</span>
-            <span class={`text-lg font-bold ${c.over ? "text-warning" : "text-base-content"}`}>
-              {c.used} / {c.target}
-            </span>
-            <span class="text-xs text-base-content/60">
-              {c.planned} planned · {c.unplanned} unplanned
-            </span>
-          </div>
-          {c.over ? (
-            <span class="text-sm text-warning font-medium max-w-[12rem] text-right">
-              Over your target — no biggie, just a heads up. 🙂
-            </span>
-          ) : (
-            <span class="text-2xl">🥡</span>
-          )}
+      <div
+        class={`mk-card p-3 flex flex-row items-center justify-between ${
+          // Over target: a warning-subtle tonal wash + warning-colored number.
+          // No border swap — borders don't exist in this design language.
+          c.over ? "bg-[var(--mk-color-warning-subtle)]" : ""
+        }`}
+      >
+        <div class="flex flex-col">
+          <span class="text-xs uppercase tracking-wide text-muted">Takeout this week</span>
+          <span class={`text-lg font-bold ${c.over ? "text-warning" : ""}`}>
+            {c.used} / {c.target}
+          </span>
+          <span class="text-xs text-muted">
+            {c.planned} planned · {c.unplanned} unplanned
+          </span>
         </div>
+        {c.over ? (
+          <span class="text-sm text-warning font-medium max-w-[12rem] text-right">
+            Over your target — no biggie, just a heads up. 🙂
+          </span>
+        ) : (
+          <span class="text-2xl">🥡</span>
+        )}
       </div>
     );
   };
@@ -248,21 +253,21 @@ function WeekNav(handle: Handle<{ weekLabel: string; prevStart: string; nextStar
     const href = (start: string) => `${routes.week.index.href()}?start=${start}`;
     return (
       <div class="flex items-center justify-between gap-2">
-        <a href={href(p.prevStart)} class="btn btn-ghost btn-sm" aria-label="Previous week">
-          ‹ Prev
+        <a href={href(p.prevStart)} class="mk-btn mk-btn--ghost mk-btn--sm" aria-label="Previous week">
+          <span class="mk-icon mk-icon--sm icon-[mk--chevron-left]" aria-hidden="true"></span> Prev
         </a>
         <div class="flex flex-col items-center">
           <span class="font-semibold text-sm">{p.weekLabel}</span>
           {p.isCurrentWeek ? (
-            <span class="text-xs text-base-content/40">this week</span>
+            <span class="text-xs text-faint">this week</span>
           ) : (
-            <a href={href(p.todayStart)} class="text-xs text-primary">
+            <a href={href(p.todayStart)} class="text-xs">
               jump to today
             </a>
           )}
         </div>
-        <a href={href(p.nextStart)} class="btn btn-ghost btn-sm" aria-label="Next week">
-          Next ›
+        <a href={href(p.nextStart)} class="mk-btn mk-btn--ghost mk-btn--sm" aria-label="Next week">
+          Next <span class="mk-icon mk-icon--sm icon-[mk--chevron-right]" aria-hidden="true"></span>
         </a>
       </div>
     );

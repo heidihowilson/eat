@@ -49,9 +49,9 @@ function FilterBar(handle: Handle<{ q: string; tag: string; allTags: string[] }>
           type="search"
           placeholder="Search ideas…"
           value={q}
-          class="input input-bordered input-sm flex-1 min-w-[8rem]"
+          class="mk-input flex-1 min-w-[8rem] w-auto"
         />
-        <select name="tag" class="select select-bordered select-sm">
+        <select name="tag" class="mk-select w-auto">
           <option value="" selected={tag === ""}>
             All tags
           </option>
@@ -61,11 +61,11 @@ function FilterBar(handle: Handle<{ q: string; tag: string; allTags: string[] }>
             </option>
           ))}
         </select>
-        <button type="submit" class="btn btn-sm btn-primary">
+        <button type="submit" class="mk-btn mk-btn--primary">
           Filter
         </button>
         {q || tag ? (
-          <a href={routes.ideas.index.href()} class="btn btn-sm btn-ghost">
+          <a href={routes.ideas.index.href()} class="mk-btn mk-btn--ghost">
             Clear
           </a>
         ) : (
@@ -79,20 +79,18 @@ function FilterBar(handle: Handle<{ q: string; tag: string; allTags: string[] }>
 /** Add form — open to every member (R3.1). name required; rest optional. */
 function AddIdea(handle: Handle<{ error?: string | null }>) {
   return () => (
-    <div class="card bg-base-200 mb-4">
-      <div class="card-body p-4 gap-2">
-        <h2 class="font-semibold text-sm text-base-content/70">Add an idea</h2>
-        {handle.props.error ? <div class="alert alert-error text-sm py-2">{handle.props.error}</div> : ""}
-        <form method="POST" action={routes.ideas.create.href()} class="flex flex-col gap-2">
-          <input name="name" type="text" required placeholder="Name (e.g. tacos)" class="input input-bordered input-sm w-full" />
-          <input name="note" type="text" placeholder="Note (optional)" class="input input-bordered input-sm w-full" />
-          <input name="recipe_url" type="url" placeholder="Recipe URL (optional)" class="input input-bordered input-sm w-full" />
-          <input name="tags" type="text" placeholder="Tags, comma-separated (optional)" class="input input-bordered input-sm w-full" />
-          <button type="submit" class="btn btn-sm btn-primary self-start">
-            Add idea
-          </button>
-        </form>
-      </div>
+    <div class="mk-card p-4 flex flex-col gap-2 mb-4">
+      <h2 class="text-sm font-semibold text-muted">Add an idea</h2>
+      {handle.props.error ? <div class="mk-alert mk-alert--danger">{handle.props.error}</div> : ""}
+      <form method="POST" action={routes.ideas.create.href()} class="flex flex-col gap-2">
+        <input name="name" type="text" required placeholder="Name (e.g. tacos)" class="mk-input" />
+        <input name="note" type="text" placeholder="Note (optional)" class="mk-input" />
+        <input name="recipe_url" type="url" placeholder="Recipe URL (optional)" class="mk-input" />
+        <input name="tags" type="text" placeholder="Tags, comma-separated (optional)" class="mk-input" />
+        <button type="submit" class="mk-btn mk-btn--primary mk-btn--sm self-start">
+          Add idea
+        </button>
+      </form>
     </div>
   );
 }
@@ -102,26 +100,28 @@ function EditIdea(handle: Handle<{ idea: IdeaView }>) {
   return () => {
     const i = handle.props.idea;
     return (
-      <details class="mt-2">
-        <summary class="cursor-pointer text-xs text-base-content/60 select-none">Edit</summary>
-        <form method="POST" action={routes.ideas.update.href()} class="flex flex-col gap-2 mt-2">
-          <input type="hidden" name="id" value={String(i.id)} />
-          <input name="name" type="text" required value={i.name} class="input input-bordered input-sm w-full" />
-          <input name="note" type="text" placeholder="Note" value={i.note ?? ""} class="input input-bordered input-sm w-full" />
-          <input name="recipe_url" type="url" placeholder="Recipe URL" value={i.recipe_url ?? ""} class="input input-bordered input-sm w-full" />
-          <input
-            name="tags"
-            type="text"
-            placeholder="Tags, comma-separated"
-            value={i.tags.join(", ")}
-            class="input input-bordered input-sm w-full"
-          />
-          <div class="flex gap-2">
-            <button type="submit" class="btn btn-sm btn-primary">
-              Save
-            </button>
-          </div>
-        </form>
+      <details class="mk-disclosure mt-2">
+        <summary class="text-xs">Edit</summary>
+        <div class="mk-disclosure__body">
+          <form method="POST" action={routes.ideas.update.href()} class="flex flex-col gap-2">
+            <input type="hidden" name="id" value={String(i.id)} />
+            <input name="name" type="text" required value={i.name} class="mk-input" />
+            <input name="note" type="text" placeholder="Note" value={i.note ?? ""} class="mk-input" />
+            <input name="recipe_url" type="url" placeholder="Recipe URL" value={i.recipe_url ?? ""} class="mk-input" />
+            <input
+              name="tags"
+              type="text"
+              placeholder="Tags, comma-separated"
+              value={i.tags.join(", ")}
+              class="mk-input"
+            />
+            <div class="flex gap-2">
+              <button type="submit" class="mk-btn mk-btn--primary mk-btn--sm">
+                Save
+              </button>
+            </div>
+          </form>
+        </div>
       </details>
     );
   };
@@ -131,52 +131,50 @@ function IdeaCard(handle: Handle<{ idea: IdeaView }>) {
   return () => {
     const i = handle.props.idea;
     return (
-      <li class="card bg-base-200">
-        <div class="card-body p-4 gap-1">
-          <div class="flex items-start justify-between gap-2">
-            <h3 class="font-semibold">{i.name}</h3>
-            {i.canEdit ? (
-              <form
-                method="POST"
-                action={routes.ideas.remove.href()}
-                data-confirm={`Delete "${i.name}"? Past plans keep working.`}
-              >
-                <input type="hidden" name="id" value={String(i.id)} />
-                <button type="submit" class="btn btn-ghost btn-xs text-error" aria-label="Delete idea">
-                  Delete
-                </button>
-              </form>
-            ) : (
-              ""
-            )}
-          </div>
-
-          {i.note ? <p class="text-sm text-base-content/70">{i.note}</p> : ""}
-
-          {i.recipe_url ? (
-            <a href={i.recipe_url} target="_blank" rel="noopener noreferrer" class="link link-primary text-sm break-all">
-              Recipe ↗
-            </a>
+      <li class="mk-card p-4 flex flex-col gap-1">
+        <div class="flex items-start justify-between gap-2">
+          <h3 class="text-base font-semibold">{i.name}</h3>
+          {i.canEdit ? (
+            <form
+              method="POST"
+              action={routes.ideas.remove.href()}
+              data-confirm={`Delete "${i.name}"? Past plans keep working.`}
+            >
+              <input type="hidden" name="id" value={String(i.id)} />
+              <button type="submit" class="mk-btn mk-btn--ghost mk-btn--sm text-danger" aria-label="Delete idea">
+                Delete
+              </button>
+            </form>
           ) : (
             ""
           )}
-
-          {i.tags.length ? (
-            <div class="flex flex-wrap gap-1 mt-1">
-              {i.tags.map((t) => (
-                <span class="badge badge-outline badge-sm">{t}</span>
-              ))}
-            </div>
-          ) : (
-            ""
-          )}
-
-          <p class="text-xs text-base-content/50 mt-1">
-            {i.lastPlanned ? `Last planned ${formatDate(i.lastPlanned)}` : "Never planned"}
-          </p>
-
-          {i.canEdit ? <EditIdea idea={i} /> : ""}
         </div>
+
+        {i.note ? <p class="text-sm text-muted">{i.note}</p> : ""}
+
+        {i.recipe_url ? (
+          <a href={i.recipe_url} target="_blank" rel="noopener noreferrer" class="text-sm break-all self-start">
+            Recipe <span class="mk-icon mk-icon--sm icon-[mk--external]" aria-hidden="true"></span>
+          </a>
+        ) : (
+          ""
+        )}
+
+        {i.tags.length ? (
+          <div class="flex flex-wrap gap-1 mt-1">
+            {i.tags.map((t) => (
+              <span class="mk-badge mk-badge--sm">{t}</span>
+            ))}
+          </div>
+        ) : (
+          ""
+        )}
+
+        <p class="text-xs text-muted mt-1">
+          {i.lastPlanned ? `Last planned ${formatDate(i.lastPlanned)}` : "Never planned"}
+        </p>
+
+        {i.canEdit ? <EditIdea idea={i} /> : ""}
       </li>
     );
   };
@@ -199,17 +197,15 @@ export function IdeasPage(
     let list: RemixNode;
     if (ideas.length === 0) {
       list = (
-        <div class="card bg-base-200">
-          <div class="card-body items-center text-center py-10">
-            <p class="text-base-content/60">
-              {filtered ? "No ideas match your filter." : "No ideas yet. Add the first one above."}
-            </p>
-          </div>
+        <div class="mk-empty">
+          <p class="mk-empty__message">
+            {filtered ? "No ideas match your filter." : "No ideas yet. Add the first one above."}
+          </p>
         </div>
       );
     } else {
       list = (
-        <ul class="flex flex-col gap-3">
+        <ul class="flex flex-col gap-3 list-none m-0 p-0">
           {ideas.map((i) => (
             <IdeaCard idea={i} />
           ))}
@@ -219,7 +215,7 @@ export function IdeasPage(
 
     return (
       <Layout title="Ideas" active="ideas" showSettings={role === "adult"}>
-        <p class="text-sm text-base-content/60 mb-4">
+        <p class="text-sm text-muted mb-4">
           The shared backlog of meal ideas. Anyone can add; the planner pulls from it on Sunday.
         </p>
         <AddIdea error={createError} />
