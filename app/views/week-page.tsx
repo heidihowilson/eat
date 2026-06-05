@@ -12,7 +12,7 @@
 import type { Handle, RemixNode } from "remix/ui";
 import { Layout } from "./layout.tsx";
 import { routes } from "../routes.ts";
-import type { Idea, SlotKind, Role } from "../db.ts";
+import type { Idea, SlotKind, Role, Theme } from "../db.ts";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -65,6 +65,7 @@ export interface TakeoutCounter {
 interface WeekProps {
   householdName: string;
   role: Role;
+  theme: Theme;
   weekLabel: string; // e.g. "Jun 1 – Jun 7"
   prevStart: string;
   nextStart: string;
@@ -165,7 +166,7 @@ function DayCard(handle: Handle<{ day: DaySlot; ideas: Idea[]; role: Role; isCur
       <div
         class={`mk-card p-3 flex flex-col gap-1 ${
           // Today gets a tonal lift — an accent-subtle wash, no border/ring.
-          d.isToday ? "bg-[var(--mk-color-accent-subtle)]" : ""
+          d.isToday ? "bg-accent-subtle" : ""
         }`}
       >
         <div class="flex items-center justify-between">
@@ -178,7 +179,7 @@ function DayCard(handle: Handle<{ day: DaySlot; ideas: Idea[]; role: Role; isCur
           {role === "adult" && d.isToday && isCurrentWeek ? (
             <form method="POST" action={routes.week.gotTakeout.href()}>
               <input type="hidden" name="date" value={d.date} />
-              <button type="submit" class="mk-btn mk-btn--sm text-warning">
+              <button type="submit" class="mk-btn mk-btn--warning mk-btn--sm">
                 🥡 We got takeout
               </button>
             </form>
@@ -222,7 +223,7 @@ function TakeoutCounterCard(handle: Handle<{ counter: TakeoutCounter }>) {
         class={`mk-card p-3 flex flex-row items-center justify-between ${
           // Over target: a warning-subtle tonal wash + warning-colored number.
           // No border swap — borders don't exist in this design language.
-          c.over ? "bg-[var(--mk-color-warning-subtle)]" : ""
+          c.over ? "bg-warning-subtle" : ""
         }`}
       >
         <div class="flex flex-col">
@@ -297,7 +298,12 @@ export function WeekPage(handle: Handle<WeekProps>) {
   })();
 
   return () => (
-    <Layout title={`Week · ${handle.props.householdName}`} active="week" showSettings={handle.props.role === "adult"}>
+    <Layout
+      title={`Week · ${handle.props.householdName}`}
+      active="week"
+      showSettings={handle.props.role === "adult"}
+      theme={handle.props.theme}
+    >
       {content}
     </Layout>
   );

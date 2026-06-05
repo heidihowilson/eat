@@ -138,6 +138,15 @@ const migrations: Array<(s: BetterSqlite3.Database) => void> = [
       CREATE INDEX idx_snacks_household_week ON snack_items(household_id, week_start_date);
     `);
   },
+
+  // v2 → per-user color theme preference. 'system' follows the OS
+  // (light-dark() tokens); 'light'/'dark' force it via data-theme on <html>.
+  (s) => {
+    s.exec(`
+      ALTER TABLE users ADD COLUMN theme TEXT NOT NULL DEFAULT 'system'
+        CHECK(theme IN ('system','light','dark'));
+    `);
+  },
 ];
 
 function migrate(): void {
@@ -164,6 +173,7 @@ export const users = table({
     password_hash: c.text(),
     name: c.text().notNull(),
     avatar_url: c.text(),
+    theme: c.enum(["system", "light", "dark"]).notNull().default("system"),
     created_at: c.text().notNull(),
   },
 });
@@ -269,6 +279,7 @@ export type Slot = TableRow<typeof slots>;
 export type GroceryItem = TableRow<typeof groceryItems>;
 export type SnackItem = TableRow<typeof snackItems>;
 export type Role = Membership["role"];
+export type Theme = User["theme"];
 export type SlotKind = Slot["kind"];
 
 // ============ USER OPERATIONS ============
@@ -393,6 +404,7 @@ export async function getHouseholdMembers(
       password_hash: (row.password_hash as string | null) ?? null,
       name: String(row.name),
       avatar_url: (row.avatar_url as string | null) ?? null,
+      theme: (row.theme as Theme) ?? "system",
       created_at: String(row.created_at),
     } as User;
     return { membership, user };

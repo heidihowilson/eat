@@ -423,3 +423,27 @@ test("9. State is consistent across reloads, and log out / log in works", async 
   await expect(pageA.getByText("2 / 2")).toBeVisible();
   await expect(pageA.getByText("Curry (by Blair)")).toBeVisible();
 });
+
+// ═══════════════════════════════════════════════════════════════════════════
+test("10. Theme preference: per-user, persists, and lands on <html data-theme>", async () => {
+  // Default: follow the OS — no data-theme attribute at all.
+  await pageA.goto("/settings");
+  await expect(pageA.locator("html")).not.toHaveAttribute("data-theme", /./);
+
+  // Pick Dark in the Appearance section → forced via data-theme on <html>.
+  await pageA.getByRole("button", { name: "Dark", exact: true }).click();
+  await pageA.waitForURL("**/settings");
+  await expect(pageA.locator("html")).toHaveAttribute("data-theme", "dark");
+
+  // It's a USER preference: applies on every page, but not to other users.
+  await pageA.goto("/week");
+  await expect(pageA.locator("html")).toHaveAttribute("data-theme", "dark");
+  await pageB.goto("/week");
+  await expect(pageB.locator("html")).not.toHaveAttribute("data-theme", /./);
+
+  // Back to System → attribute gone.
+  await pageA.goto("/settings");
+  await pageA.getByRole("button", { name: "System", exact: true }).click();
+  await pageA.waitForURL("**/settings");
+  await expect(pageA.locator("html")).not.toHaveAttribute("data-theme", /./);
+});

@@ -14,7 +14,7 @@
 import type { Handle, RemixNode } from "remix/ui";
 import { Layout } from "./layout.tsx";
 import { routes } from "../routes.ts";
-import type { GroceryItem, SnackItem, Role } from "../db.ts";
+import type { GroceryItem, SnackItem, Role, Theme } from "../db.ts";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -56,7 +56,7 @@ function FauxCheck(handle: Handle<{ checked: boolean }>) {
         <span class="mk-icon mk-icon--sm icon-[mk--check]" aria-hidden="true"></span>
       </span>
     ) : (
-      <span class="flex h-6 w-6 flex-none bg-[var(--mk-color-field)] shadow-[inset_0_0_0_2px_var(--mk-color-text-muted)]"></span>
+      <span class="flex h-6 w-6 flex-none bg-field shadow-[inset_0_0_0_2px_var(--mk-color-text-muted)]"></span>
     );
 }
 
@@ -135,10 +135,10 @@ function SnackRow(handle: Handle<{ item: SnackItem; canEdit: boolean }>) {
 }
 
 export function GroceryPage(
-  handle: Handle<{ role: Role; items: GroceryItem[]; snacks: SnackItem[]; weekStart: string }>
+  handle: Handle<{ role: Role; theme: Theme; items: GroceryItem[]; snacks: SnackItem[]; weekStart: string }>
 ) {
   return () => {
-    const { role, items, snacks, weekStart } = handle.props;
+    const { role, theme, items, snacks, weekStart } = handle.props;
     const canEdit = role === "adult";
 
     const unchecked = items.filter((i) => i.checked_at === null || i.checked_at === undefined);
@@ -147,7 +147,7 @@ export function GroceryPage(
     const ordered = [...unchecked, ...checked];
 
     return (
-      <Layout title="Groceries" active="grocery" showSettings={canEdit}>
+      <Layout title="Groceries" active="grocery" showSettings={canEdit} theme={theme}>
         <div class="flex flex-col gap-4">
           {/* ── Grocery checklist (R4.1/R4.3) ── */}
           <section class="mk-card p-4 flex flex-col gap-3">

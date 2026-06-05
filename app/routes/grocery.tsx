@@ -101,7 +101,7 @@ const groceryController = createController(routes.grocery, {
     async index({ get }) {
       const g = await requireUser(get(CurrentUserId));
       if (!g.ok) return g.response;
-      const { household, role } = g.value;
+      const { user, household, role } = g.value;
 
       const weekStart = currentWeekStartDate(household.week_start_day);
       const [items, snacks] = await Promise.all([
@@ -110,7 +110,7 @@ const groceryController = createController(routes.grocery, {
       ]);
 
       return render(
-        <GroceryPage role={role} items={items} snacks={snacks} weekStart={weekStart} />
+        <GroceryPage role={role} theme={user.theme} items={items} snacks={snacks} weekStart={weekStart} />
       );
     },
 

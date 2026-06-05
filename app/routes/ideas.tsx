@@ -168,7 +168,7 @@ const ideasController = createController(routes.ideas, {
       }));
 
       return render(
-        <IdeasPage role={role} ideas={ideaViews} q={q} tag={tag} allTags={allTags} createError={createError} />
+        <IdeasPage role={role} theme={user.theme} ideas={ideaViews} q={q} tag={tag} allTags={allTags} createError={createError} />
       );
     },
 
