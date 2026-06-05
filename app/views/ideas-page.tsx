@@ -16,7 +16,7 @@
 import type { Handle, RemixNode } from "remix/ui";
 import { Layout } from "./layout.tsx";
 import { routes } from "../routes.ts";
-import type { Role } from "../db.ts";
+import type { Role, Theme } from "../db.ts";
 
 /** One idea, flattened for the view (tags already JSON-parsed, lastPlanned resolved). */
 export interface IdeaView {
@@ -183,6 +183,7 @@ function IdeaCard(handle: Handle<{ idea: IdeaView }>) {
 export function IdeasPage(
   handle: Handle<{
     role: Role;
+    theme: Theme;
     ideas: IdeaView[];
     q: string;
     tag: string;
@@ -191,7 +192,7 @@ export function IdeasPage(
   }>
 ) {
   return () => {
-    const { role, ideas, q, tag, allTags, createError } = handle.props;
+    const { role, theme, ideas, q, tag, allTags, createError } = handle.props;
     const filtered = q !== "" || tag !== "";
 
     let list: RemixNode;
@@ -214,7 +215,7 @@ export function IdeasPage(
     }
 
     return (
-      <Layout title="Ideas" active="ideas" showSettings={role === "adult"}>
+      <Layout title="Ideas" active="ideas" showSettings={role === "adult"} theme={theme}>
         <p class="text-sm text-muted mb-4">
           The shared backlog of meal ideas. Anyone can add; the planner pulls from it on Sunday.
         </p>

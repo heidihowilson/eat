@@ -185,7 +185,7 @@ const weekController = createController(routes.week, {
     async index({ get, url }) {
       const g = await requireUser(get(CurrentUserId));
       if (!g.ok) return g.response;
-      const { household, role } = g.value;
+      const { user, household, role } = g.value;
 
       const today = todayUtc();
       // ?start may be any date in the target week; we re-anchor it to the
@@ -246,6 +246,7 @@ const weekController = createController(routes.week, {
         <WeekPage
           householdName={household.name}
           role={role}
+          theme={user.theme}
           weekLabel={weekLabel(start, end)}
           prevStart={toIsoDate(addDays(start, -7))}
           nextStart={toIsoDate(addDays(start, 7))}

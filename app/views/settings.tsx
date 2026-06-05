@@ -11,9 +11,15 @@
 import type { Handle } from "remix/ui";
 import { Layout } from "./layout.tsx";
 import { routes } from "../routes.ts";
-import type { Role } from "../db.ts";
+import type { Role, Theme } from "../db.ts";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+const THEMES: Array<{ value: Theme; label: string }> = [
+  { value: "system", label: "System" },
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+];
 
 export interface MemberRow {
   membershipId: number;
@@ -36,6 +42,7 @@ interface SettingsProps {
   householdName: string;
   weekStartDay: number;
   takeoutTarget: number;
+  theme: Theme;
   members: MemberRow[];
   invites: ActiveInvite[];
 }
@@ -61,10 +68,10 @@ function RoleBadge(handle: Handle<{ role: Role }>) {
 
 export function SettingsPage(handle: Handle<SettingsProps>) {
   return () => {
-    const { householdName, weekStartDay, takeoutTarget, members, invites } = handle.props;
+    const { householdName, weekStartDay, takeoutTarget, theme, members, invites } = handle.props;
 
     return (
-      <Layout title="Settings" active="settings" showSettings={true}>
+      <Layout title="Settings" active="settings" showSettings={true} theme={theme}>
         <div class="flex flex-col gap-6">
           {/* ── Household settings (R5.1) ── */}
           <section class="mk-card flex flex-col gap-3">
@@ -110,6 +117,29 @@ export function SettingsPage(handle: Handle<SettingsProps>) {
                 Save settings
               </button>
             </form>
+          </section>
+
+          {/* ── Appearance (per-user, not per-household) ── */}
+          <section class="mk-card flex flex-col gap-3">
+            <h2 class="text-base">Appearance</h2>
+            {/* Three submit buttons in one form — the clicked button's value is
+                the theme. One tap, no client JS, 303s straight back here. */}
+            <form method="POST" action={routes.settings.setTheme.href()} class="flex gap-2">
+              {THEMES.map((t) => (
+                <button
+                  type="submit"
+                  name="theme"
+                  value={t.value}
+                  class={`mk-btn flex-1 ${theme === t.value ? "mk-btn--active" : ""}`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </form>
+            <p class="text-xs text-muted">
+              System follows your device. Saved to your account, so it applies on every device you
+              sign in from.
+            </p>
           </section>
 
           {/* ── Members (R5.2) ── */}

@@ -58,6 +58,7 @@ export const routes = route({
   settings: route("settings", {
     index: get("/"), // GET /settings (adult)
     update: post("update"), // POST /settings/update         (adult) — name/week start/target
+    setTheme: post("theme"), // POST /settings/theme          (any member) — per-USER appearance pref
     createInvite: post("invite"), // POST /settings/invite         (adult)
     revokeInvite: post("invite/revoke"), // POST /settings/invite/revoke  (adult) — delete an invite
     removeMember: post("member/remove"), // POST /settings/member/remove  (adult)

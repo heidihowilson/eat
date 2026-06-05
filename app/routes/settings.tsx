@@ -13,7 +13,8 @@
  *         controller — we only link to it here.
  *
  * Guard rails baked in:
- *   - Every mutation is `requireAdult` + `requireSameOrigin()` (server-side R1.5).
+ *   - Every mutation is `requireAdult` + `requireSameOrigin()` (server-side R1.5) —
+ *     except setTheme, which is `requireUser`: it writes only the caller's own user row.
  *   - Every query is scoped to `g.value.household.id` (tenancy seam) — ids from the
  *     form are validated to belong to this household before use.
  *   - You cannot remove yourself or demote yourself if you are the LAST adult — the
@@ -35,13 +36,14 @@ import { sql } from "remix/data-table";
 
 import { routes } from "../routes.ts";
 import { render } from "../render.tsx";
-import { CurrentUserId, requireAdult, requireSameOrigin } from "../auth.ts";
+import { CurrentUserId, requireAdult, requireUser, requireSameOrigin } from "../auth.ts";
 import { randomToken } from "../crypto.ts";
 import { INVITE_TTL_MS } from "../config.ts";
 import {
   db,
   invites,
   memberships,
+  users,
   nowIso,
   updateHousehold,
   getHouseholdMembers,
@@ -63,6 +65,8 @@ const householdSettingsForm = f.object({
 });
 
 const inviteForm = f.object({ role: f.field(roleSchema) });
+
+const themeForm = f.object({ theme: f.field(s.enum_(["system", "light", "dark"] as const)) });
 
 const memberIdForm = f.object({
   member_id: f.field(s.defaulted(coerce.number(), 0).transform((n) => Math.trunc(n))),
@@ -153,6 +157,7 @@ const settingsController = createController(routes.settings, {
           householdName={household.name}
           weekStartDay={household.week_start_day}
           takeoutTarget={household.takeout_target}
+          theme={user.theme}
           members={members}
           invites={inviteList}
         />
@@ -176,6 +181,23 @@ const settingsController = createController(routes.settings, {
           week_start_day,
           takeout_target,
         });
+        return redirect(routes.settings.index.href(), 303);
+      },
+    },
+
+    // POST /settings/theme — the user's appearance preference. The one
+    // requireUser (not requireAdult) mutation here: it writes only the
+    // caller's OWN user row, so no household/role authority is involved.
+    setTheme: {
+      middleware: [requireSameOrigin()],
+      async handler({ get }) {
+        const g = await requireUser(get(CurrentUserId));
+        if (!g.ok) return g.response;
+
+        const parsed = s.parseSafe(themeForm, get(FormData));
+        if (parsed.success) {
+          await db.update(users, g.value.user.id, { theme: parsed.value.theme });
+        }
         return redirect(routes.settings.index.href(), 303);
       },
     },

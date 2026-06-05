@@ -13,6 +13,7 @@
    reset; the small base block below covers the gap preflight used to fill. */
 @import "@sethmakes/tokens/index.css";
 @import "@sethmakes/tokens/fonts.css";
+@import "@sethmakes/tokens/tailwind.css";
 @import "@sethmakes/css/index.css";
 
 @layer theme, base, components, utilities;
@@ -35,20 +36,9 @@
   icon-sets: from-json(mk, "node_modules/@sethmakes/icons/dist/mk.json");
 }
 
-/* Bridge mk semantic tokens into Tailwind color utilities (text-muted,
-   bg-surface-2, hover:text-danger, …). Components use mk- classes; these
-   exist for the layout-utility layer the app keeps. */
-@theme {
-  --color-accent: var(--mk-color-accent);
-  --color-accent-contrast: var(--mk-color-accent-contrast);
-  --color-warning: var(--mk-color-warning);
-  --color-danger: var(--mk-color-danger);
-  --color-muted: var(--mk-color-text-muted);
-  --color-faint: var(--mk-color-text-faint);
-  --color-surface-1: var(--mk-color-surface-1);
-  --color-surface-2: var(--mk-color-surface-2);
-  --color-surface-3: var(--mk-color-surface-3);
-}
+/* The mk-token → Tailwind color-utility bridge (text-muted, bg-surface-2,
+   hover:text-danger, …) is @sethmakes/tokens/tailwind.css, imported above —
+   0.1.4 shipped it upstream because every consumer hand-rolled the same map. */
 
 /* What we still need from preflight (not imported, see header): the views
    space everything with mb-N and gap-N utilities and assume zero default

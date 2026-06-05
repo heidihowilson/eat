@@ -8,7 +8,9 @@
  *
  * Styling is the sethmakes design system (mk-* classes + tokens); Tailwind
  * utilities handle layout only. Color mode follows the OS (light-dark() tokens)
- * — there is no data-theme attribute on purpose.
+ * unless the user picked an explicit theme in Settings — then `theme` lands as
+ * data-theme on <html> and the tokens' [data-theme] overrides force the mode.
+ * "system" (the default) renders no attribute.
  *
  * Usage from a feature page:
  *   import { Layout } from "../views/layout.tsx";
@@ -21,8 +23,14 @@
 import type { Handle, RemixNode } from "remix/ui";
 import { CSS_VERSION } from "../render.tsx";
 import { routes, staticUrl } from "../routes.ts";
+import type { Theme } from "../db.ts";
 
 export type Tab = "week" | "ideas" | "grocery" | "settings";
+
+/** data-theme value for <html>: undefined (omit the attribute) for "system". */
+function themeAttr(theme: Theme | undefined): "light" | "dark" | undefined {
+  return theme === "light" || theme === "dark" ? theme : undefined;
+}
 
 interface NavItem {
   tab: Tab;
@@ -37,6 +45,7 @@ export function Layout(
     active?: Tab;
     showSettings?: boolean;
     hideNav?: boolean;
+    theme?: Theme;
     children?: RemixNode;
   }>
 ) {
@@ -59,7 +68,7 @@ export function Layout(
     }
 
     return (
-      <html lang="en">
+      <html lang="en" data-theme={themeAttr(handle.props.theme)}>
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
