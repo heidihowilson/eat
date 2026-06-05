@@ -8,6 +8,9 @@ node_modules/
 
 # Generated at build time from styles/app.css (see build:css script)
 public/static/app.css
+# Copied at build time from @sethmakes/tokens (fonts.css uses relative URLs the
+# standalone Tailwind CLI does not rebase — see build:css script)
+public/static/fonts/
 
 .claude/
 test-results/
