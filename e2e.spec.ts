@@ -72,7 +72,7 @@ async function signup(page: Page, u: { name: string; email: string; password: st
 function dayCardByDate(page: Page, date: string) {
   // Each card carries the set-slot form with a hidden date input; scope to the card.
   return page
-    .locator(".card", { has: page.locator(`form input[name="date"][value="${date}"]`) })
+    .locator(".mk-card", { has: page.locator(`form input[name="date"][value="${date}"]`) })
     .first();
 }
 
@@ -149,7 +149,7 @@ test("2. A adds ideas and plans four kinds of slot", async () => {
   );
   // The tag renders as a badge on the idea card (also appears in the filter
   // dropdown, so scope to the idea list item).
-  const dumplingCard = pageA.locator("li.card", {
+  const dumplingCard = pageA.locator("li.mk-card", {
     has: pageA.getByRole("heading", { name: POOL_IDEA }),
   });
   await expect(dumplingCard.getByText("asian", { exact: true })).toBeVisible();
@@ -385,7 +385,7 @@ test("8. 'Last planned' shows on the pooled idea now that it's planned", async (
   // POOL_IDEA was planned on Monday in test 2. Its idea card should now say
   // "Last planned ..." instead of "Never planned".
   await pageA.goto("/ideas");
-  const card = pageA.locator("li.card", { has: pageA.getByRole("heading", { name: POOL_IDEA }) });
+  const card = pageA.locator("li.mk-card", { has: pageA.getByRole("heading", { name: POOL_IDEA }) });
   await expect(card.getByText(/Last planned/)).toBeVisible();
   await expect(card.getByText("Never planned")).toHaveCount(0);
 });
