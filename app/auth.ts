@@ -67,7 +67,11 @@ interface CookieOpts {
 function serializeSessionCookie(value: string, opts: CookieOpts = {}): string {
   let str = `${SESSION_COOKIE_NAME}=${encodeURIComponent(value)}`;
   if (opts.maxAge !== undefined) str += `; Max-Age=${opts.maxAge}`;
-  str += `; Path=/; SameSite=Lax; Secure; HttpOnly`;
+  // Secure only in production: browsers exempt localhost from the Secure
+  // requirement, but plain-http LAN access (e.g. http://192.168.x.x:8103
+  // during a demo) would silently drop the cookie and loop back to /login.
+  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
+  str += `; Path=/; SameSite=Lax${secure}; HttpOnly`;
   return str;
 }
 
